@@ -1,0 +1,10 @@
+[tools]
+go = "1.27.1"
+[env]
+GOTMPDIR = "{{env.HOME}}/.cache/go-tmp"
+[tasks.gen]
+description = "Rebuild the generated templ files"
+run = "go tool templ generate"
+[tasks.check]
+description = "What every change must pass: generated files fresh, gofmt, go vet, tests"
+run = "scripts/check"

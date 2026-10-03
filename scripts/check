@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# What every change must pass before it is tagged (`mise run check`). If templ generate changes
+# anything, the generated files were stale and the check fails so they get committed.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+mkdir -p "${GOTMPDIR:-/tmp}"
+
+generated() { find . -name '*_templ.go' | sort | xargs sha256sum; }
+before=$(generated)
+go tool templ generate >/dev/null 2>&1
+if [ "$before" != "$(generated)" ]; then
+  echo "Generated templ files were out of date and have been rebuilt: commit them." >&2
+  exit 1
+fi
+unformatted=$(gofmt -l .)
+if [ -n "$unformatted" ]; then
+  echo "Run gofmt -w on:" >&2
+  echo "$unformatted" >&2
+  exit 1
+fi
+go vet ./...
+go test ./...

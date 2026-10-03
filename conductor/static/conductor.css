@@ -1,0 +1,100 @@
+/* MelodyMe's conductor page: a site the visitor may not read, or nothing at the address. It stands
+   alone, needing none of the app's styles. The fonts come with it, as a Content-Security-Policy of
+   'self' allows no font host; Noto Music carries only the clef, fermata and notes. */
+.locked-body { margin:0; }
+.locked, .locked * { box-sizing:border-box; }
+.locked h1, .locked h2, .locked p { margin:0; }
+.locked a { text-decoration:none; }
+@font-face { font-family:"DM Serif Display"; src:url(fonts/dm-serif-display-latin.woff2) format("woff2"); font-display:swap; }
+@font-face { font-family:"Fredoka"; font-weight:600; src:url(fonts/fredoka-600-latin.woff2) format("woff2"); font-display:swap; }
+@font-face { font-family:"Noto Music"; src:url(fonts/noto-music-notes.woff2) format("woff2"); font-display:block; unicode-range:U+2669-266C, U+1D110, U+1D11E; }
+.locked { --t1:#7c2740; --t2:#f08aa6; font:15px/1.5 system-ui, sans-serif; --serif:"DM Serif Display", Georgia, serif; --music:"Noto Music", serif; min-height:100vh; display:flex; flex-direction:column; overflow:hidden; color:#fff; background:linear-gradient(160deg,var(--t1),var(--t2)); }
+.locked-head { text-align:center; padding:30px 0 22px; }
+.locked-fermata { display:inline-block; height:42px; font:52px/1 var(--music); transform-origin:50% 80%; animation:locked-breathe 2s ease-in-out infinite; }
+@keyframes locked-breathe { 0%,100% { transform:scale(1); opacity:.85; } 50% { transform:scale(1.14); opacity:1; } }
+.locked-head h1 { margin-top:6px; font:400 68px/1 var(--serif); letter-spacing:0; text-shadow:0 2px 14px #0004; }
+.locked-head p { margin-top:8px; font:italic 400 20px/1.2 var(--serif); opacity:.92; }
+
+/* The stave: notes hop along it and scroll towards the clef */
+.stave { position:relative; height:118px; margin-top:18px; }
+.stave-lines { position:absolute; left:0; right:0; top:34px; height:58px; background:repeating-linear-gradient(180deg,#fff9 0 1.5px,transparent 1.5px 14px); }
+.stave-clef { position:absolute; right:max(16px,4%); top:4px; font:92px/1 var(--music); text-shadow:0 2px 10px #0003; }
+.stave-track { position:absolute; top:0; bottom:0; left:0; right:calc(max(16px,4%) + 60px); overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 10%,#000 92%,transparent); }
+.stave-reel { display:flex; width:max-content; height:100%; animation:stave-reel 20s linear infinite; }
+@keyframes stave-reel { to { transform:translateX(-50%); } }
+.stave-bar { display:flex; height:100%; }
+.stave .nt { position:relative; width:52px; height:100%; font:42px/1 var(--music); }
+.stave .nt i { position:absolute; left:8px; font-style:normal; animation:stave-hop .5s ease-in-out infinite alternate; }
+.stave .nt:nth-child(odd) i { animation-delay:-.5s; }
+@keyframes stave-hop { from { transform:translateY(0) rotate(-4deg); } to { transform:translateY(-7px) rotate(4deg); } }
+.stave .p1 i { top:58px; } .stave .p2 i { top:51px; } .stave .p3 i { top:44px; } .stave .p4 i { top:37px; }
+.stave .p5 i { top:30px; } .stave .p6 i { top:23px; } .stave .p7 i { top:16px; }
+.stave .bl { width:1.5px; height:58px; margin:34px 22px 0; background:#fffc; }
+
+/* The conductor and the message */
+.locked-stage { flex:1; display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:20px 34px; align-items:center; width:100%; max-width:960px; margin:0 auto; padding:10px 40px 32px; }
+.conductor { width:100%; max-width:320px; justify-self:center; overflow:visible; }
+.cd-body { fill:var(--t2); stroke:#fffd; stroke-width:4; }
+.cd-hand { fill:var(--t2); stroke:#00000026; stroke-width:2; }
+.cd { transform-box:fill-box; transform-origin:50% 100%; animation:cd-bob 1s ease-in-out infinite alternate; }
+@keyframes cd-bob { to { translate:0 -4px; } }
+.cd-eye { transform-box:fill-box; transform-origin:center; animation:cd-blink 5s infinite; }
+@keyframes cd-blink { 0%,93%,100% { transform:scaleY(1); } 95% { transform:scaleY(.08); } }
+.cd-pupil { transition:transform .2s ease-out; }
+.cd-smile, .cd-grin, .cd-frown { transition:opacity .15s; } .cd-grin, .cd-frown { opacity:0; }
+.cd-brow { transform-box:fill-box; transform-origin:center; transition:translate .3s, rotate .3s; }
+.cd-baton-arm { transform-box:view-box; transform-origin:212px 196px; animation:cd-beat 2s ease-in-out infinite; }
+@keyframes cd-beat { 0% { rotate:-18deg; } 22% { rotate:26deg; } 47% { rotate:4deg; } 72% { rotate:18deg; } 100% { rotate:-18deg; } }
+.cd-free-arm { transform-box:view-box; transform-origin:92px 196px; animation:cd-sweep 4s ease-in-out infinite alternate; }
+@keyframes cd-sweep { from { rotate:6deg; } to { rotate:-10deg; } }
+.cd-hair circle { transform-box:fill-box; transform-origin:center bottom; animation:cd-flop 1s ease-in-out infinite alternate; }
+.cd-hair circle:nth-child(even) { animation-delay:-.5s; }
+@keyframes cd-flop { from { transform:rotate(-6deg); } to { transform:rotate(6deg); } }
+/* Cross-eyed (the pointer between the eyes): sad, swaying, with stars circling the head */
+.cd-dizzy { opacity:0; transition:opacity .2s; pointer-events:none; }
+.cd-dizzy path { fill:#fff; fill-opacity:.9; stroke:var(--t1); stroke-width:.6; stroke-linejoin:round; }
+.cd-dizzy-flat { transform:scale(1,.38); transform-origin:0 0; }
+.cd-dizzy-spin { transform-origin:0 0; animation:cd-spin 1.4s linear infinite; }
+/* Each star turns back as the ring turns and is drawn tall, so it stays upright and round once flattened. */
+.cd-star { transform-origin:0 0; animation:cd-spin 1.4s linear infinite reverse; }
+@keyframes cd-spin { to { rotate:360deg; } }
+.is-dizzy .cd-dizzy { opacity:1; }
+.locked .is-dizzy :is(.cd-smile, .cd-grin) { opacity:0; }
+.locked .is-dizzy .cd-frown { opacity:1; }
+.locked .is-dizzy .cd-brow { translate:0 0; } .is-dizzy .cd-brow-l { rotate:-14deg; } .is-dizzy .cd-brow-r { rotate:14deg; }
+.is-dizzy .cd { animation:cd-bob 1s ease-in-out infinite alternate, cd-woozy 1.6s ease-in-out infinite; }
+@keyframes cd-woozy { 0%,100% { rotate:0deg; } 25% { rotate:-5deg; } 75% { rotate:5deg; } } /* starts upright, so going dizzy doesn't jump */
+.is-dizzy .cd-pupil { animation:cd-swirl .7s linear infinite; }
+@keyframes cd-swirl { 0% { translate:1.5px 0; } 25% { translate:0 1.5px; } 50% { translate:-1.5px 0; } 75% { translate:0 -1.5px; } 100% { translate:1.5px 0; } }
+.locked-bubble { position:relative; display:grid; gap:14px; justify-items:start; padding:28px 28px 30px; border-radius:26px; background:#fbf8f1; color:#18201c; box-shadow:0 26px 50px -22px #0007; }
+.locked-bubble::before { content:""; position:absolute; left:-13px; top:50%; width:30px; height:30px; margin-top:-15px; border-radius:4px; background:inherit; rotate:45deg; }
+.locked-bubble h2 { font:600 30px/1.14 "Fredoka", system-ui, sans-serif; letter-spacing:0; text-wrap:balance; }
+.locked-go { display:inline-flex; align-items:center; gap:10px; padding:15px 22px; border:0; border-radius:12px; cursor:pointer; font:700 16px/1 system-ui, sans-serif; background:var(--t1); color:#fff; transition:transform .2s, box-shadow .2s; }
+.locked-go:hover { transform:translateY(-2px); box-shadow:0 10px 24px -10px var(--t1); }
+.locked-go:focus-visible { outline:2px solid var(--t1); outline-offset:3px; }
+.locked-eq { display:inline-flex; gap:3px; align-items:flex-end; height:16px; }
+.locked-eq i { width:3px; height:100%; border-radius:2px; background:currentColor; transform-origin:bottom; transform:scaleY(.35); }
+.locked-eq i:nth-child(2) { transform:scaleY(.7); } .locked-eq i:nth-child(3) { transform:scaleY(.5); }
+.locked-go:is(:hover,:focus-visible) .locked-eq i { animation:locked-eq .45s ease-in-out infinite alternate; }
+.locked-go:is(:hover,:focus-visible) .locked-eq i:nth-child(2) { animation-delay:-.2s; }
+.locked-go:is(:hover,:focus-visible) .locked-eq i:nth-child(3) { animation-delay:-.35s; }
+@keyframes locked-eq { from { transform:scaleY(.2); } to { transform:scaleY(1); } }
+/* Reaching for sign-in: the orchestra doubles its tempo and the conductor grins */
+.locked:has(.locked-go:is(:hover,:focus-visible)) .cd-baton-arm { animation-duration:1s; }
+.locked:has(.locked-go:is(:hover,:focus-visible)) :is(.cd, .stave .nt i) { animation-duration:.25s; }
+.locked:has(.locked-go:is(:hover,:focus-visible)) .cd-smile { opacity:0; }
+.locked:has(.locked-go:is(:hover,:focus-visible)) .cd-grin { opacity:1; }
+.locked:has(.locked-go:is(:hover,:focus-visible)) .cd-brow { translate:0 -4px; }
+.locked-foot { padding:14px 24px 22px; text-align:center; font-size:13px; letter-spacing:.02em; color:#ffffffc0; }
+.locked-foot a { color:#fff; font-weight:600; }
+.locked-foot a:hover { text-decoration:underline; }
+@media (max-width:680px) {
+  .locked-head h1 { font-size:52px; }
+  .locked-stage { grid-template-columns:minmax(0,1fr); gap:6px; padding:0 18px 28px; }
+  .conductor { max-width:220px; }
+  .locked-bubble::before { left:50%; top:-12px; margin:0 0 0 -15px; }
+  .locked-bubble h2 { font-size:25px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .locked *, .locked *::before { animation:none !important; transition:none !important; }
+}

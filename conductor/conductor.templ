@@ -1,0 +1,185 @@
+// Package conductor is MelodyMe's page for an address a visitor can't use: a site they may not
+// read, or nothing at all. A red page with a moving stave, a round conductor whose eyes follow the
+// pointer (and cross, dizzily, between the eyes), and one message. Each app shows it itself, with
+// its own status code, and serves its files with Static.
+package conductor
+
+// Stage is what the page says. With SignIn set it offers sign-in, with Back a link, with neither
+// nothing.
+type Stage struct {
+	Lang            string // the page's language, "en" when empty
+	Title, Subtitle string // the large name at the top and the line under it
+	Heading, Text   string // the message in the speech bubble
+	SignIn          *Form
+	Back            *Link
+}
+
+// Form is a sign-in button: a POST to Action carrying Fields.
+type Form struct {
+	Action string
+	Fields []Field
+}
+
+type Field struct{ Name, Value string }
+
+type Link struct{ Href, Label string }
+
+// NotFound is the page for an address with nothing at it, or nothing this visitor may know about.
+var NotFound = Stage{
+	Title:    "Wrong note",
+	Subtitle: "MelodyMe",
+	Heading:  "Sorry, there's nothing at this address",
+	Text:     "Check the address for typos, or ask whoever gave it to you.",
+	Back:     &Link{Href: "/", Label: "Back to the start"},
+}
+
+// A note on the moving stave. A note without a glyph is a bar line.
+type staveNote struct{ Glyph, Class string }
+
+var tune = []staveNote{
+	{"♩", "nt p3"}, {"♪", "nt p5"}, {"♫", "nt p4"}, {"♩", "nt p6"}, {"", "bl"},
+	{"♪", "nt p2"}, {"♬", "nt p4"}, {"♩", "nt p5"}, {"♪", "nt p7"}, {"", "bl"},
+	{"♫", "nt p3"}, {"♩", "nt p1"}, {"♪", "nt p4"}, {"♬", "nt p6"}, {"", "bl"},
+	{"♩", "nt p5"}, {"♫", "nt p2"}, {"♪", "nt p3"}, {"♩", "nt p4"}, {"", "bl"},
+}
+
+// Page is the whole document, so it doesn't depend on the app's own layout or styles.
+templ Page(st Stage) {
+	<!DOCTYPE html>
+	<html lang={ lang(st) }>
+		<head>
+			<meta charset="utf-8"/>
+			<title>{ st.Title }</title>
+			<meta name="viewport" content="width=device-width,initial-scale=1"/>
+			<link rel="icon" href="data:,"/>
+			<link rel="stylesheet" href={ asset("conductor.css") }/>
+			<script src={ asset("conductor.js") } defer></script>
+		</head>
+		<body class="locked-body">
+			<div class="locked">
+				<header class="locked-head">
+					<span class="locked-fermata" aria-hidden="true">𝄐</span>
+					<h1>{ st.Title }</h1>
+					if st.Subtitle != "" {
+						<p>{ st.Subtitle }</p>
+					}
+					<div class="stave" aria-hidden="true">
+						<div class="stave-lines"></div>
+						<div class="stave-track">
+							<div class="stave-reel">
+								// Twice over, so the reel loops without a seam.
+								for i := 0; i < 2; i++ {
+									<div class="stave-bar">
+										for _, n := range tune {
+											if n.Glyph == "" {
+												<span class={ n.Class }></span>
+											} else {
+												<span class={ n.Class }><i>{ n.Glyph }</i></span>
+											}
+										}
+									</div>
+								}
+							</div>
+						</div>
+						<span class="stave-clef">𝄞</span>
+					</div>
+				</header>
+				<main class="locked-stage">
+					@conductor()
+					<div class="locked-bubble">
+						<h2>{ st.Heading }</h2>
+						<p>{ st.Text }</p>
+						if st.SignIn != nil {
+							<form method="post" action={ templ.SafeURL(st.SignIn.Action) }>
+								for _, f := range st.SignIn.Fields {
+									<input type="hidden" name={ f.Name } value={ f.Value }/>
+								}
+								<button class="locked-go"><span class="locked-eq" aria-hidden="true"><i></i><i></i><i></i></span>Sign in with MelodyMe ID</button>
+							</form>
+						} else if st.Back != nil {
+							<a class="locked-go" href={ templ.SafeURL(st.Back.Href) }><span class="locked-eq" aria-hidden="true"><i></i><i></i><i></i></span>{ st.Back.Label }</a>
+						}
+					</div>
+				</main>
+				<footer class="locked-foot">powered by <a href="https://melodyme.xyz">MelodyMe.xyz</a></footer>
+			</div>
+		</body>
+	</html>
+}
+
+func lang(st Stage) string {
+	if st.Lang == "" {
+		return "en"
+	}
+	return st.Lang
+}
+
+// The conductor: a round blob in a tailcoat whose eyes follow the pointer (app.js) and who grins
+// when the sign-in button is hovered (sites.css).
+templ conductor() {
+	<svg class="conductor" data-watch viewBox="0 0 300 330" aria-hidden="true">
+		<defs><clipPath id="conductor-coat"><rect x="90" y="48" width="120" height="236" rx="60"></rect></clipPath></defs>
+		<rect x="52" y="286" width="196" height="40" rx="5" fill="#4a3422"></rect>
+		<rect x="52" y="286" width="196" height="8" rx="3" fill="#6b4d31"></rect>
+		<g class="cd">
+			<path d="M96 236 L78 296 L118 284 Z M204 236 L222 296 L182 284 Z" fill="#14181a"></path>
+			<rect class="cd-body" x="90" y="48" width="120" height="236" rx="60"></rect>
+			<g clip-path="url(#conductor-coat)">
+				<path d="M80 168 H220 V300 H80 Z" fill="#14181a"></path>
+				<path d="M126 168 L150 232 L174 168 Z" fill="#fbf8f1"></path>
+				<path d="M126 168 L144 214 L132 222 L112 172 Z M174 168 L156 214 L168 222 L188 172 Z" fill="#262c2f"></path>
+				<circle cx="150" cy="242" r="3" fill="#3a4246"></circle>
+				<circle cx="150" cy="258" r="3" fill="#3a4246"></circle>
+			</g>
+			<g class="cd-hair" fill="#f2efe7">
+				<circle cx="100" cy="74" r="15"></circle>
+				<circle cx="112" cy="54" r="17"></circle>
+				<circle cx="134" cy="42" r="17"></circle>
+				<circle cx="158" cy="38" r="18"></circle>
+				<circle cx="182" cy="46" r="17"></circle>
+				<circle cx="198" cy="64" r="15"></circle>
+				<circle cx="205" cy="84" r="11"></circle>
+				<circle cx="95" cy="94" r="10"></circle>
+			</g>
+			<circle cx="110" cy="138" r="9" fill="#ff7f9c" opacity=".45"></circle>
+			<circle cx="190" cy="138" r="9" fill="#ff7f9c" opacity=".45"></circle>
+			<g class="cd-eye">
+				<circle cx="127" cy="110" r="15" fill="#fff"></circle>
+				<g class="cd-pupil"><circle cx="127" cy="110" r="7" fill="#17201c"></circle><circle cx="129.5" cy="106.5" r="2.3" fill="#fff"></circle></g>
+			</g>
+			<g class="cd-eye">
+				<circle cx="173" cy="110" r="15" fill="#fff"></circle>
+				<g class="cd-pupil"><circle cx="173" cy="110" r="7" fill="#17201c"></circle><circle cx="175.5" cy="106.5" r="2.3" fill="#fff"></circle></g>
+			</g>
+			<path class="cd-brow cd-brow-l" d="M114 87 Q127 80 140 87" fill="none" stroke="#17201c" stroke-width="5" stroke-linecap="round"></path>
+			<path class="cd-brow cd-brow-r" d="M160 87 Q173 80 186 87" fill="none" stroke="#17201c" stroke-width="5" stroke-linecap="round"></path>
+			<path class="cd-smile" d="M138 142 Q150 152 162 142" fill="none" stroke="#17201c" stroke-width="4.5" stroke-linecap="round"></path>
+			<path class="cd-frown" d="M138 151 Q150 141 162 151" fill="none" stroke="#17201c" stroke-width="4.5" stroke-linecap="round"></path>
+			<g class="cd-grin">
+				<path d="M132 138 Q150 170 168 138 Z" fill="#17201c" stroke="#17201c" stroke-width="4" stroke-linejoin="round"></path>
+				<path d="M141 153 Q150 147 159 153 Q150 162 141 153" fill="#ff7f9c"></path>
+			</g>
+			<path d="M150 172 L130 162 L130 182 Z M150 172 L170 162 L170 182 Z" fill="#17201c"></path>
+			<circle cx="150" cy="172" r="5.5" fill="#17201c"></circle>
+			<g class="cd-free-arm">
+				<path d="M96 198 Q70 186 60 158" fill="none" stroke="#14181a" stroke-width="17" stroke-linecap="round"></path>
+				<circle class="cd-hand" cx="58" cy="150" r="12"></circle>
+			</g>
+			<g class="cd-baton-arm">
+				<path d="M206 198 Q232 190 244 166" fill="none" stroke="#14181a" stroke-width="17" stroke-linecap="round"></path>
+				<line x1="248" y1="158" x2="292" y2="104" stroke="#fbf8f1" stroke-width="4" stroke-linecap="round"></line>
+				<circle class="cd-hand" cx="248" cy="158" r="12"></circle>
+			</g>
+		</g>
+		// Stars circling the head while the conductor is cross-eyed and sad (is-dizzy, set by app.js).
+		<g class="cd-dizzy" transform="translate(150 22)">
+			<g class="cd-dizzy-flat">
+				<g class="cd-dizzy-spin">
+					<g transform="translate(58 0)"><g class="cd-star"><path transform="scale(1.4 3.7)" d="M0 -9 L2.6 -2.8 L9 -2.6 L4 1.6 L5.6 8.4 L0 4.6 L-5.6 8.4 L-4 1.6 L-9 -2.6 L-2.6 -2.8 Z"></path></g></g>
+					<g transform="translate(-29 50)"><g class="cd-star"><path transform="scale(1.4 3.7)" d="M0 -9 L2.6 -2.8 L9 -2.6 L4 1.6 L5.6 8.4 L0 4.6 L-5.6 8.4 L-4 1.6 L-9 -2.6 L-2.6 -2.8 Z"></path></g></g>
+					<g transform="translate(-29 -50)"><g class="cd-star"><path transform="scale(1.4 3.7)" d="M0 -9 L2.6 -2.8 L9 -2.6 L4 1.6 L5.6 8.4 L0 4.6 L-5.6 8.4 L-4 1.6 L-9 -2.6 L-2.6 -2.8 Z"></path></g></g>
+				</g>
+			</g>
+		</g>
+	</svg>
+}
