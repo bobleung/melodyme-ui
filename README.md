@@ -6,6 +6,14 @@ What MelodyMe's apps share. For now that is one page.
 
 MelodyMe's page for an address a visitor can't use: a site they may not read, or nothing at all. It is red, with a moving stave and a round conductor whose eyes follow the pointer (and cross, dizzily, when the pointer is between them), and it carries one message. The app shows it itself, so the status code (401, 403, 404) and the address stay its own.
 
+Add it to an app:
+
+```sh
+go get github.com/bobleung/melodyme-ui@latest
+```
+
+Then:
+
 ```go
 import "github.com/bobleung/melodyme-ui/conductor"
 
@@ -25,6 +33,16 @@ conductor.Page(conductor.Stage{
 	SignIn:   &conductor.Form{Action: "/session/visit", Fields: []conductor.Field{{Name: "return_to", Value: "/ddsi/"}}},
 })
 ```
+
+`NotFound` links back to `/` as "Back to the start". An app can name itself instead by changing a copy:
+
+```go
+notFound := conductor.NotFound
+notFound.Subtitle = "MelodyMe Sites"
+notFound.Back = &conductor.Link{Href: "/", Label: "Back to MelodyMe Sites"}
+```
+
+A `Stage` with neither `SignIn` nor `Back` shows the message with no button, for a visitor who is signed in but not let in.
 
 The page needs nothing from the app's layout or styles, and no inline scripts or styles, so it works under a Content-Security-Policy of `'self'`.
 
