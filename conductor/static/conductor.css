@@ -18,8 +18,8 @@
 /* The stave: notes hop along it and scroll towards the clef */
 .stave { position:relative; height:118px; margin-top:18px; }
 .stave-lines { position:absolute; left:0; right:0; top:34px; height:58px; background:repeating-linear-gradient(180deg,#fff9 0 1.5px,transparent 1.5px 14px); }
-.stave-clef { position:absolute; right:max(16px,4%); top:4px; font:92px/1 var(--music); text-shadow:0 2px 10px #0003; }
-.stave-track { position:absolute; top:0; bottom:0; left:0; right:calc(max(16px,4%) + 60px); overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 10%,#000 92%,transparent); }
+.stave-clef { position:absolute; left:max(16px,4%); top:4px; font:92px/1 var(--music); text-shadow:0 2px 10px #0003; }
+.stave-track { position:absolute; top:0; bottom:0; left:calc(max(16px,4%) + 60px); right:0; overflow:hidden; mask-image:linear-gradient(90deg,transparent,#000 8%,#000 90%,transparent); }
 .stave-reel { display:flex; width:max-content; height:100%; animation:stave-reel 20s linear infinite; }
 @keyframes stave-reel { to { transform:translateX(-50%); } }
 .stave-bar { display:flex; height:100%; }
